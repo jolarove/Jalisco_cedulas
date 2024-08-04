@@ -338,6 +338,18 @@ def extraerDatos(texto):
     
     return elementos
 
+def eliminar_saltos_linea(texto):
+    """
+    Eliminamos los saltos de línea
+
+    Parámetros:
+    texto(str): texto al que le eliminaremos el salto de línea
+
+    Retorna:
+    texto(str): texto sin salto de línea
+    """
+    return texto.replace("\n", " ")
+
 #ACCIÓN
 
 #Definimos la url de la que extraeremos los datos
@@ -529,7 +541,7 @@ print(len(extraccion))
 
 #Definimos la ruta de la carpeta donde están las imágenes
 carpeta ='Jalisco_cedulas/imagenes'
-print(carpeta)
+
 #Creamos una lista vacía para almacenar los textos extraidos
 textos = []
 
@@ -579,7 +591,7 @@ dfDatosImagenes['Colonia'] = colonias
 dfDatosImagenes['Fecha desaparición'] = fechasDesaparicion
 
 #Guardamos el data frame
-dfDatosImagenes.to_csv('Jalisco_cedulas/datos_imagenes.csv', index=False)
+dfDatosImagenes.to_csv(linkBase, index=False)
 
 ##### PENDIENTES
 
@@ -587,6 +599,14 @@ dfDatosImagenes.to_csv('Jalisco_cedulas/datos_imagenes.csv', index=False)
 Limpieza de las columnas Nombre, Edad, Municipio, Colonia y Fecha de Desaparición y crear un nuevo data frame
 sólo con esta información más el id
 """
+#Eliminamos los saltos de línea en la columna texto
+dfDatosImagenes['Texto'] = dfDatosImagenes['Texto'].apply(eliminar_saltos_linea)
+dfDatosImagenes.to_csv(linkBase, index=False)
+
+#Creamos un nuevo data frame
+columnas = ['id', 'Nombre', 'Edad', 'Municipio', 'Colonia', 'Fecha desaparición', 'Estado', 'Link']
+df = dfDatosImagenes[columnas]
+df.to_csv('Jalisco_cedulas/cedulas_Jalisco.csv', index=False)
 
 """
 Filtrar sólo las imágenes que son cédulas y clasificarlas como desaparecido o localizado
