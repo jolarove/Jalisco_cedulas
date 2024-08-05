@@ -581,11 +581,9 @@ dfDatosImagenes['Fecha desaparición'] = fechasDesaparicion
 #Guardamos el data frame
 dfDatosImagenes.to_csv(linkBase, index=False)
 
-##### PENDIENTES
 
 """
-Limpieza de las columnas Nombre, Edad, Municipio, Colonia y Fecha de Desaparición y crear un nuevo data frame
-sólo con esta información más el id
+Limpieza de la columna Municipio y creación de un nuevo data frame con los datos del AMG
 """
 
 #Creamos un nuevo data frame
@@ -648,11 +646,6 @@ dfCedulas['Municipio'] = municipiosCorrectos
 dfAmg = dfCedulas[dfCedulas['Municipio'].isin(amg)]
 dfAmg.to_csv('Jalisco_cedulas/cedulas_amg.csv', index=False)
         
-
-edadesLimpias = dfCedulas['Edad'].str.replace("AFIOS", "").str.replace("APROXIMADAMENTE", "").str.replace('AJIOS',"")
-edadesLimpias = edadesLimpias.str.replace('No disponible', "").str.split(" ").str[0]
-dfCedulas['Edad'] = edadesLimpias
-dfCedulas.to_csv('Jalisco_cedulas/cedulas_Jalisco.csv', index=False)
 
 """
 Filtrar sólo las imágenes que son cédulas y clasificarlas como desaparecido o localizado
