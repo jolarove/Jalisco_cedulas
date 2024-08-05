@@ -338,6 +338,16 @@ def extraerDatos(texto):
     
     return elementos
 
+def limpiar_texto(texto):
+    if isinstance(texto, str):
+        # Eliminar puntos
+        texto = texto.replace('.', '')
+        #Eliminar acentos
+        texto = unidecode(texto)
+        # Eliminar espacios adicionales
+        texto = ' '.join(texto.split())
+    return texto
+
 #ACCIÓN
 
 #Definimos la url de la que extraeremos los datos
@@ -591,23 +601,13 @@ columnas = ['id', 'Nombre', 'Edad', 'Municipio', 'Colonia', 'Fecha desaparición
 dfCedulas = dfDatosImagenes[columnas]
 dfCedulas.to_csv('Jalisco_cedulas/cedulas_Jalisco.csv', index=False)
 
-def limpiar_texto(texto):
-    if isinstance(texto, str):
-        # Eliminar puntos, comillas y saltos de línea
-        texto = re.sub(r'[."]', '', texto)
-        #Eliminar acentos
-        texto = unidecode(texto)
-        # Eliminar espacios adicionales
-        texto = ' '.join(texto.split())
-    return texto
-
 columnasLimpiar = ['Nombre', 'Municipio', 'Colonia', 'Fecha desaparición']
 for col in columnas:
     dfCedulas[col] = dfCedulas[col].apply(limpiar_texto)
 
 
 
-dfCedulas.to_csv('Jalisco_cedulas/cedulas_Jalisco.csv', index=False)
+
 
 amg = ['GUADALAJARA', 'ZAPOPAN', 'TLAJOMULCO DE ZUÑIGA', 'TONALA', 'SAN PEDRO TLAQUEPAQUE',
        'EL SALTO', 'ZAPOTLANEJO', 'IXTLAHUACÁN DE LOS MEMBRILLOS', 'JUANACATLÁN']
@@ -615,6 +615,7 @@ amg = ['GUADALAJARA', 'ZAPOPAN', 'TLAJOMULCO DE ZUÑIGA', 'TONALA', 'SAN PEDRO T
 municipiosLimpios = dfCedulas['Municipio'].str.split(",").str[0]
 municipiosLimpios = municipiosLimpios.str.replace('"', '')
 dfCedulas['Municipio'] = municipiosLimpios
+dfCedulas.to_csv('Jalisco_cedulas/cedulas_Jalisco.csv', index=False)
 
 municipiosCorrectos = []
 for i, fila in dfCedulas.iterrows():
@@ -645,9 +646,5 @@ dfCedulas['Municipio'] = municipiosCorrectos
 
 dfAmg = dfCedulas[dfCedulas['Municipio'].isin(amg)]
 dfAmg.to_csv('Jalisco_cedulas/cedulas_amg.csv', index=False)
-        
 
-"""
-Filtrar sólo las imágenes que son cédulas y clasificarlas como desaparecido o localizado
-"""
 
