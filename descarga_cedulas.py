@@ -338,18 +338,6 @@ def extraerDatos(texto):
     
     return elementos
 
-def eliminar_saltos_linea(texto):
-    """
-    Eliminamos los saltos de línea
-
-    Parámetros:
-    texto(str): texto al que le eliminaremos el salto de línea
-
-    Retorna:
-    texto(str): texto sin salto de línea
-    """
-    return texto.replace("\n", " ")
-
 #ACCIÓN
 
 #Definimos la url de la que extraeremos los datos
@@ -599,14 +587,72 @@ dfDatosImagenes.to_csv(linkBase, index=False)
 Limpieza de las columnas Nombre, Edad, Municipio, Colonia y Fecha de Desaparición y crear un nuevo data frame
 sólo con esta información más el id
 """
-#Eliminamos los saltos de línea en la columna texto
-dfDatosImagenes['Texto'] = dfDatosImagenes['Texto'].apply(eliminar_saltos_linea)
-dfDatosImagenes.to_csv(linkBase, index=False)
 
 #Creamos un nuevo data frame
 columnas = ['id', 'Nombre', 'Edad', 'Municipio', 'Colonia', 'Fecha desaparición', 'Estado', 'Link']
-df = dfDatosImagenes[columnas]
-df.to_csv('Jalisco_cedulas/cedulas_Jalisco.csv', index=False)
+dfCedulas = dfDatosImagenes[columnas]
+dfCedulas.to_csv('Jalisco_cedulas/cedulas_Jalisco.csv', index=False)
+
+def limpiar_texto(texto):
+    if isinstance(texto, str):
+        # Eliminar puntos, comillas y saltos de línea
+        texto = re.sub(r'[."]', '', texto)
+        #Eliminar acentos
+        texto = unidecode(texto)
+        # Eliminar espacios adicionales
+        texto = ' '.join(texto.split())
+    return texto
+
+columnasLimpiar = ['Nombre', 'Municipio', 'Colonia', 'Fecha desaparición']
+for col in columnas:
+    dfCedulas[col] = dfCedulas[col].apply(limpiar_texto)
+
+
+
+dfCedulas.to_csv('Jalisco_cedulas/cedulas_Jalisco.csv', index=False)
+
+amg = ['GUADALAJARA', 'ZAPOPAN', 'TLAJOMULCO DE ZUÑIGA', 'TONALA', 'SAN PEDRO TLAQUEPAQUE',
+       'EL SALTO', 'ZAPOTLANEJO', 'IXTLAHUACÁN DE LOS MEMBRILLOS', 'JUANACATLÁN']
+
+municipiosLimpios = dfCedulas['Municipio'].str.split(",").str[0]
+municipiosLimpios = municipiosLimpios.str.replace('"', '')
+dfCedulas['Municipio'] = municipiosLimpios
+
+municipiosCorrectos = []
+for i, fila in dfCedulas.iterrows():
+    municipio = str(fila['Municipio'])
+    if municipio.startswith('GUADA'):
+        municipio = 'GUADALAJARA'
+    elif municipio.startswith('ZAPOP'):
+        municipio = 'ZAPOPAN'
+    elif municipio.startswith('TONA'):
+        municipio = 'TONALA'
+    elif municipio.startswith('TLAJO') or municipio.startswith('TAJOM'):
+        municipio = 'TLAJOMULCO DE ZUÑIGA'
+    elif municipio.startswith('SAN PEDRO'):
+        municipio = 'SAN PEDRO TLAQUEPAQUE'
+    elif municipio.startswith('EL SAL'):
+        municipio = 'EL SALTO'
+    elif municipio.startswith('ZAPOTLANEJO'):
+        municipio = 'ZAPOTLANEJO'
+    elif municipio.startswith('JUANA'):
+        municipio = 'JUANACATLAN'
+    elif municipio.startswith('IXTLAHUACAN DE LOS'):
+        municipio = 'IXTLAHUACAN DE LOS MEMBRILLOS'
+    else:
+        municipio = municipio
+    municipiosCorrectos.append(municipio)
+
+dfCedulas['Municipio'] = municipiosCorrectos
+
+dfAmg = dfCedulas[dfCedulas['Municipio'].isin(amg)]
+dfAmg.to_csv('Jalisco_cedulas/cedulas_amg.csv', index=False)
+        
+
+edadesLimpias = dfCedulas['Edad'].str.replace("AFIOS", "").str.replace("APROXIMADAMENTE", "").str.replace('AJIOS',"")
+edadesLimpias = edadesLimpias.str.replace('No disponible', "").str.split(" ").str[0]
+dfCedulas['Edad'] = edadesLimpias
+dfCedulas.to_csv('Jalisco_cedulas/cedulas_Jalisco.csv', index=False)
 
 """
 Filtrar sólo las imágenes que son cédulas y clasificarlas como desaparecido o localizado
